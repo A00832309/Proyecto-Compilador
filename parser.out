@@ -1,0 +1,155 @@
+Created by PLY version 3.11 (http://www.dabeaz.com/ply)
+
+Grammar
+
+Rule 0     S' -> program
+Rule 1     program -> PROGRAM ID SEMI vars_decls func_decls MAIN body END
+Rule 2     func_decls -> func_decl func_decls
+Rule 3     func_decls -> empty
+Rule 4     func_decl -> VOID ID LPAREN params RPAREN LCO local_vars body RCO SEMI
+Rule 5     params -> param_list
+Rule 6     params -> empty
+Rule 7     param_list -> ID COLON type
+Rule 8     param_list -> ID COLON type COMMA param_list
+Rule 9     body -> LBRACE statements RBRACE
+Rule 10    statements -> statement statements
+Rule 11    statements -> empty
+Rule 12    statement -> assignment
+Rule 13    statement -> condition
+Rule 14    statement -> loop
+Rule 15    statement -> func_call
+Rule 16    statement -> print_stmt
+Rule 17    assignment -> ID EQ expression SEMI
+Rule 18    condition -> IF LPAREN expression RPAREN body else_part SEMI
+Rule 19    else_part -> ELSE body
+Rule 20    else_part -> empty
+Rule 21    loop -> WHILE LPAREN expression RPAREN DO body SEMI
+Rule 22    func_call -> ID LPAREN args RPAREN SEMI
+Rule 23    args -> expression_list
+Rule 24    args -> empty
+Rule 25    expression_list -> expression
+Rule 26    expression_list -> expression COMMA expression_list
+Rule 27    print_stmt -> PRINT LPAREN print_args RPAREN SEMI
+Rule 28    print_args -> print_list
+Rule 29    print_args -> empty
+Rule 30    print_list -> printable
+Rule 31    print_list -> printable COMMA print_list
+Rule 32    printable -> expression
+Rule 33    printable -> CTE_STRING
+Rule 34    vars_decls -> vars_decl vars_decls
+Rule 35    vars_decls -> empty
+Rule 36    vars_decl -> VAR ID list_ids COLON type SEMI
+Rule 37    list_ids -> COMMA ID list_ids
+Rule 38    list_ids -> empty
+Rule 39    local_vars -> vars_decl
+Rule 40    local_vars -> empty
+Rule 41    type -> INT
+Rule 42    type -> FLOAT
+Rule 43    expression -> simple_expression
+Rule 44    expression -> simple_expression relop simple_expression
+Rule 45    simple_expression -> term
+Rule 46    simple_expression -> term PLUS simple_expression
+Rule 47    simple_expression -> term MINUS simple_expression
+Rule 48    term -> factor
+Rule 49    term -> factor mulop term
+Rule 50    factor -> LPAREN expression RPAREN
+Rule 51    factor -> facestrc
+Rule 52    facestrc -> PLUS faciden
+Rule 53    facestrc -> MINUS faciden
+Rule 54    facestrc -> faciden
+Rule 55    faciden -> ID
+Rule 56    faciden -> cte
+Rule 57    cte -> CTE_INT
+Rule 58    cte -> CTE_FLOAT
+Rule 59    relop -> LT
+Rule 60    relop -> GT
+Rule 61    relop -> NEQ
+Rule 62    mulop -> MULT
+Rule 63    mulop -> DIV
+Rule 64    empty -> <empty>
+Rule 65    expresion -> expresion PLUS termino
+Rule 66    expresion -> expresion MINUS termino
+Rule 67    termino -> termino MULT factor
+Rule 68    termino -> termino DIV factor
+Rule 69    factor -> NUMBER
+Rule 70    factor -> ID
+Rule 71    asignacion -> ID EQ expresion
+
+Terminals, with rules where they appear
+
+COLON                : 7 8 36
+COMMA                : 8 26 31 37
+CTE_FLOAT            : 58
+CTE_INT              : 57
+CTE_STRING           : 33
+DIV                  : 63 68
+DO                   : 21
+ELSE                 : 19
+END                  : 1
+EQ                   : 17 71
+FLOAT                : 42
+GT                   : 60
+ID                   : 1 4 7 8 17 22 36 37 55 70 71
+IF                   : 18
+INT                  : 41
+LBRACE               : 9
+LCO                  : 4
+LPAREN               : 4 18 21 22 27 50
+LT                   : 59
+MAIN                 : 1
+MINUS                : 47 53 66
+MULT                 : 62 67
+NEQ                  : 61
+PLUS                 : 46 52 65
+PRINT                : 27
+PROGRAM              : 1
+RBRACE               : 9
+RCO                  : 4
+RPAREN               : 4 18 21 22 27 50
+SEMI                 : 1 4 17 18 21 22 27 36
+VAR                  : 36
+VOID                 : 4
+WHILE                : 21
+error                : 
+
+Nonterminals, with rules where they appear
+
+NUMBER               : 69
+args                 : 22
+asignacion           : 
+assignment           : 12
+body                 : 1 4 18 19 21
+condition            : 13
+cte                  : 56
+else_part            : 18
+empty                : 3 6 11 20 24 29 35 38 40
+expresion            : 65 66 71
+expression           : 17 18 21 25 26 32 50
+expression_list      : 23 26
+facestrc             : 51
+faciden              : 52 53 54
+factor               : 48 49 67 68
+func_call            : 15
+func_decl            : 2
+func_decls           : 1 2
+list_ids             : 36 37
+local_vars           : 4
+loop                 : 14
+mulop                : 49
+param_list           : 5 8
+params               : 4
+print_args           : 27
+print_list           : 28 31
+print_stmt           : 16
+printable            : 30 31
+program              : 0
+relop                : 44
+simple_expression    : 43 44 44 46 47
+statement            : 10
+statements           : 9 10
+term                 : 45 46 47 49
+termino              : 65 66 67 68
+type                 : 7 8 36
+vars_decl            : 34 39
+vars_decls           : 1 34
+
