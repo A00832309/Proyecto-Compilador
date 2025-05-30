@@ -55,6 +55,7 @@ test_cases = [
     '''
     program Fugonachi;
     vars n : int;
+    
     void generarFugonachi(n: int)
     [
         vars a, b, temp : int;
@@ -65,7 +66,7 @@ test_cases = [
             if (n > 1) {
                 print(b);
                 n = n - 2;
-                while (n > 0) {
+                while (n > 0) do {
                     temp = a + b;
                     print(temp);
                     a = b;
@@ -79,7 +80,7 @@ test_cases = [
     main {
         n = 7;
         generarFugonachi(n);
-    };
+    }
     end
 
     ''',
@@ -119,6 +120,12 @@ test_cases = [
 
 for i, code in enumerate(test_cases):
     print(f"\n--- Test case {i + 1} ---")
+
+    # IMPRIMIR CÓDIGO CON LÍNEAS
+    print("Código fuente:")
+    for idx, line in enumerate(code.strip().splitlines(), 1):
+        print(f"{idx:02d}: {line}")
+
     result = parser.parse(code, lexer=lexer)
     cuadru.print_quadruples()
     print(result)

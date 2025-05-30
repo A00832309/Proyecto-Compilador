@@ -26,19 +26,23 @@ def p_func_decls(p):
 def p_func_decl(p):
     '''func_decl : VOID ID LPAREN params RPAREN LCO local_vars body RCO SEMI'''
     func_name = p[2]
+
+
     params = p[4] or []
-
-    semantica.declarar_fucion(func_name, 'void', [(name, typ) for _, name, typ in params])
     semantica.enter_scope(func_name)
+    semantica.declarar_fucion(func_name, 'void', [(name, typ) for _, name, typ in params])
 
-    if isinstance(p[6], tuple):  # <-- Solución aquí
-        for var_id in p[6][1]:
-            semantica.declare_var(var_id, p[6][2])
+    local_decls = p[6] if p[6] else []
+    for decl in local_decls:
+        if decl and decl[0] == 'VARS_DECL':
+            ids = decl[1]
+            tipo = decl[2]
+            for var_id in ids:
+                semantica.declarar_variable(var_id, tipo)
 
-    semantica.entorno_actual = 'global'
-    p[0] = ('FUNC_DECL', func_name, params, p[6], p[7])
-
-
+    semantica.entorno_salida()
+    print("PARSING FUNC OK:", func_name)
+    p[0] = ('FUNC_DECL', func_name, params, local_decls, p[7])
 
 
 def p_params(p):
@@ -120,8 +124,8 @@ def p_assignment(p):
 def p_condition(p):
     '''condition : IF LPAREN expression RPAREN body else_part SEMI'''
     exp = p[3]
-    print("DEBUG condition - Tipos:", cuadru.tipos)
-    print("DEBUG condition - Operandos:", cuadru.operandos)
+    # print("DEBUG condition - Tipos:", cuadru.tipos)
+    # print("DEBUG condition - Operandos:", cuadru.operandos)
 
     if not cuadru.tipos or not cuadru.operandos:
         raise Exception("Error: pila vacía al evaluar la condición IF")
@@ -132,12 +136,10 @@ def p_condition(p):
     if tipo != 'bool':
         raise Exception("Condición no booleana en IF")
 
-    # Cuádruplo GOTOF con salto pendiente
     false_jump_index = len(cuadru.cuadruplos)
     cuadru.cuadruplos.append(('GOTOF', resultado, None, None))
     cuadru.saltos.append(false_jump_index)
 
-    # cuerpo del IF
     p[5]  # body
 
     if p[6]:  # hay else
@@ -160,7 +162,7 @@ def p_condition(p):
 def p_else_part(p):
     '''else_part : ELSE body
                  | empty'''
-    if len(p) > 1:
+    if len(p) == 3:
         p[0] = p[2]
     else:
         p[0] = None
@@ -202,10 +204,8 @@ def p_loop(p):
     # Ejecutar body del ciclo
     p[6]
 
-    # GOTO al inicio del ciclo
     cuadru.cuadruplos.append(('GOTO', None, None, loop_start))
 
-    # Fin del ciclo (actualizar GOTOF pendiente)
     end_loop = len(cuadru.cuadruplos)
     gotof_index = cuadru.saltos.pop()
     cuadru.cuadruplos[gotof_index] = ('GOTOF', resultado, None, end_loop)
@@ -296,9 +296,13 @@ def p_list_ids(p):
         p[0] = []
 
 def p_local_vars(p):
-    '''local_vars : vars_decl
+    '''local_vars : vars_decl local_vars
                   | empty'''
-    p[0] = p[1]
+    if len(p) == 3:
+        p[0] = [p[1]] + (p[2] if p[2] else [])
+    else:
+        p[0] = []
+
 # ------------------------------------------------------------------------------
 def p_type(p):
     '''type : INT
@@ -341,8 +345,8 @@ def p_expression(p):
 
         p[0] = ('RELOP', op, left, right, ('TYPE', result_type))
 
-        print("AFTER expression - Tipos:", cuadru.tipos)
-        print("AFTER expression - Operandos:", cuadru.operandos)
+        # print("AFTER expression - Tipos:", cuadru.tipos)
+        # print("AFTER expression - Operandos:", cuadru.operandos)
 
 
 # Definido en el documento con <EXP>
