@@ -41,7 +41,7 @@ Rule 35    vars_decls -> empty
 Rule 36    vars_decl -> VAR ID list_ids COLON type SEMI
 Rule 37    list_ids -> COMMA ID list_ids
 Rule 38    list_ids -> empty
-Rule 39    local_vars -> vars_decl
+Rule 39    local_vars -> vars_decl local_vars
 Rule 40    local_vars -> empty
 Rule 41    type -> INT
 Rule 42    type -> FLOAT
@@ -67,13 +67,6 @@ Rule 61    relop -> NEQ
 Rule 62    mulop -> MULT
 Rule 63    mulop -> DIV
 Rule 64    empty -> <empty>
-Rule 65    expresion -> expresion PLUS termino
-Rule 66    expresion -> expresion MINUS termino
-Rule 67    termino -> termino MULT factor
-Rule 68    termino -> termino DIV factor
-Rule 69    factor -> NUMBER
-Rule 70    factor -> ID
-Rule 71    asignacion -> ID EQ expresion
 
 Terminals, with rules where they appear
 
@@ -82,14 +75,14 @@ COMMA                : 8 26 31 37
 CTE_FLOAT            : 58
 CTE_INT              : 57
 CTE_STRING           : 33
-DIV                  : 63 68
+DIV                  : 63
 DO                   : 21
 ELSE                 : 19
 END                  : 1
-EQ                   : 17 71
+EQ                   : 17
 FLOAT                : 42
 GT                   : 60
-ID                   : 1 4 7 8 17 22 36 37 55 70 71
+ID                   : 1 4 7 8 17 22 36 37 55
 IF                   : 18
 INT                  : 41
 LBRACE               : 9
@@ -97,10 +90,10 @@ LCO                  : 4
 LPAREN               : 4 18 21 22 27 50
 LT                   : 59
 MAIN                 : 1
-MINUS                : 47 53 66
-MULT                 : 62 67
+MINUS                : 47 53
+MULT                 : 62
 NEQ                  : 61
-PLUS                 : 46 52 65
+PLUS                 : 46 52
 PRINT                : 27
 PROGRAM              : 1
 RBRACE               : 9
@@ -114,26 +107,23 @@ error                :
 
 Nonterminals, with rules where they appear
 
-NUMBER               : 69
 args                 : 22
-asignacion           : 
 assignment           : 12
 body                 : 1 4 18 19 21
 condition            : 13
 cte                  : 56
 else_part            : 18
 empty                : 3 6 11 20 24 29 35 38 40
-expresion            : 65 66 71
 expression           : 17 18 21 25 26 32 50
 expression_list      : 23 26
 facestrc             : 51
 faciden              : 52 53 54
-factor               : 48 49 67 68
+factor               : 48 49
 func_call            : 15
 func_decl            : 2
 func_decls           : 1 2
 list_ids             : 36 37
-local_vars           : 4
+local_vars           : 4 39
 loop                 : 14
 mulop                : 49
 param_list           : 5 8
@@ -148,8 +138,1657 @@ simple_expression    : 43 44 44 46 47
 statement            : 10
 statements           : 9 10
 term                 : 45 46 47 49
-termino              : 65 66 67 68
 type                 : 7 8 36
 vars_decl            : 34 39
 vars_decls           : 1 34
+
+Parsing method: LALR
+
+state 0
+
+    (0) S' -> . program
+    (1) program -> . PROGRAM ID SEMI vars_decls func_decls MAIN body END
+
+    PROGRAM         shift and go to state 2
+
+    program                        shift and go to state 1
+
+state 1
+
+    (0) S' -> program .
+
+
+
+state 2
+
+    (1) program -> PROGRAM . ID SEMI vars_decls func_decls MAIN body END
+
+    ID              shift and go to state 3
+
+
+state 3
+
+    (1) program -> PROGRAM ID . SEMI vars_decls func_decls MAIN body END
+
+    SEMI            shift and go to state 4
+
+
+state 4
+
+    (1) program -> PROGRAM ID SEMI . vars_decls func_decls MAIN body END
+    (34) vars_decls -> . vars_decl vars_decls
+    (35) vars_decls -> . empty
+    (36) vars_decl -> . VAR ID list_ids COLON type SEMI
+    (64) empty -> .
+
+    VAR             shift and go to state 8
+    VOID            reduce using rule 64 (empty -> .)
+    MAIN            reduce using rule 64 (empty -> .)
+
+    vars_decls                     shift and go to state 5
+    vars_decl                      shift and go to state 6
+    empty                          shift and go to state 7
+
+state 5
+
+    (1) program -> PROGRAM ID SEMI vars_decls . func_decls MAIN body END
+    (2) func_decls -> . func_decl func_decls
+    (3) func_decls -> . empty
+    (4) func_decl -> . VOID ID LPAREN params RPAREN LCO local_vars body RCO SEMI
+    (64) empty -> .
+
+    VOID            shift and go to state 12
+    MAIN            reduce using rule 64 (empty -> .)
+
+    func_decls                     shift and go to state 9
+    func_decl                      shift and go to state 10
+    empty                          shift and go to state 11
+
+state 6
+
+    (34) vars_decls -> vars_decl . vars_decls
+    (34) vars_decls -> . vars_decl vars_decls
+    (35) vars_decls -> . empty
+    (36) vars_decl -> . VAR ID list_ids COLON type SEMI
+    (64) empty -> .
+
+    VAR             shift and go to state 8
+    VOID            reduce using rule 64 (empty -> .)
+    MAIN            reduce using rule 64 (empty -> .)
+
+    vars_decl                      shift and go to state 6
+    vars_decls                     shift and go to state 13
+    empty                          shift and go to state 7
+
+state 7
+
+    (35) vars_decls -> empty .
+
+    VOID            reduce using rule 35 (vars_decls -> empty .)
+    MAIN            reduce using rule 35 (vars_decls -> empty .)
+
+
+state 8
+
+    (36) vars_decl -> VAR . ID list_ids COLON type SEMI
+
+    ID              shift and go to state 14
+
+
+state 9
+
+    (1) program -> PROGRAM ID SEMI vars_decls func_decls . MAIN body END
+
+    MAIN            shift and go to state 15
+
+
+state 10
+
+    (2) func_decls -> func_decl . func_decls
+    (2) func_decls -> . func_decl func_decls
+    (3) func_decls -> . empty
+    (4) func_decl -> . VOID ID LPAREN params RPAREN LCO local_vars body RCO SEMI
+    (64) empty -> .
+
+    VOID            shift and go to state 12
+    MAIN            reduce using rule 64 (empty -> .)
+
+    func_decl                      shift and go to state 10
+    func_decls                     shift and go to state 16
+    empty                          shift and go to state 11
+
+state 11
+
+    (3) func_decls -> empty .
+
+    MAIN            reduce using rule 3 (func_decls -> empty .)
+
+
+state 12
+
+    (4) func_decl -> VOID . ID LPAREN params RPAREN LCO local_vars body RCO SEMI
+
+    ID              shift and go to state 17
+
+
+state 13
+
+    (34) vars_decls -> vars_decl vars_decls .
+
+    VOID            reduce using rule 34 (vars_decls -> vars_decl vars_decls .)
+    MAIN            reduce using rule 34 (vars_decls -> vars_decl vars_decls .)
+
+
+state 14
+
+    (36) vars_decl -> VAR ID . list_ids COLON type SEMI
+    (37) list_ids -> . COMMA ID list_ids
+    (38) list_ids -> . empty
+    (64) empty -> .
+
+    COMMA           shift and go to state 19
+    COLON           reduce using rule 64 (empty -> .)
+
+    list_ids                       shift and go to state 18
+    empty                          shift and go to state 20
+
+state 15
+
+    (1) program -> PROGRAM ID SEMI vars_decls func_decls MAIN . body END
+    (9) body -> . LBRACE statements RBRACE
+
+    LBRACE          shift and go to state 22
+
+    body                           shift and go to state 21
+
+state 16
+
+    (2) func_decls -> func_decl func_decls .
+
+    MAIN            reduce using rule 2 (func_decls -> func_decl func_decls .)
+
+
+state 17
+
+    (4) func_decl -> VOID ID . LPAREN params RPAREN LCO local_vars body RCO SEMI
+
+    LPAREN          shift and go to state 23
+
+
+state 18
+
+    (36) vars_decl -> VAR ID list_ids . COLON type SEMI
+
+    COLON           shift and go to state 24
+
+
+state 19
+
+    (37) list_ids -> COMMA . ID list_ids
+
+    ID              shift and go to state 25
+
+
+state 20
+
+    (38) list_ids -> empty .
+
+    COLON           reduce using rule 38 (list_ids -> empty .)
+
+
+state 21
+
+    (1) program -> PROGRAM ID SEMI vars_decls func_decls MAIN body . END
+
+    END             shift and go to state 26
+
+
+state 22
+
+    (9) body -> LBRACE . statements RBRACE
+    (10) statements -> . statement statements
+    (11) statements -> . empty
+    (12) statement -> . assignment
+    (13) statement -> . condition
+    (14) statement -> . loop
+    (15) statement -> . func_call
+    (16) statement -> . print_stmt
+    (64) empty -> .
+    (17) assignment -> . ID EQ expression SEMI
+    (18) condition -> . IF LPAREN expression RPAREN body else_part SEMI
+    (21) loop -> . WHILE LPAREN expression RPAREN DO body SEMI
+    (22) func_call -> . ID LPAREN args RPAREN SEMI
+    (27) print_stmt -> . PRINT LPAREN print_args RPAREN SEMI
+
+    RBRACE          reduce using rule 64 (empty -> .)
+    ID              shift and go to state 35
+    IF              shift and go to state 36
+    WHILE           shift and go to state 37
+    PRINT           shift and go to state 38
+
+    statements                     shift and go to state 27
+    statement                      shift and go to state 28
+    empty                          shift and go to state 29
+    assignment                     shift and go to state 30
+    condition                      shift and go to state 31
+    loop                           shift and go to state 32
+    func_call                      shift and go to state 33
+    print_stmt                     shift and go to state 34
+
+state 23
+
+    (4) func_decl -> VOID ID LPAREN . params RPAREN LCO local_vars body RCO SEMI
+    (5) params -> . param_list
+    (6) params -> . empty
+    (7) param_list -> . ID COLON type
+    (8) param_list -> . ID COLON type COMMA param_list
+    (64) empty -> .
+
+    ID              shift and go to state 39
+    RPAREN          reduce using rule 64 (empty -> .)
+
+    params                         shift and go to state 40
+    param_list                     shift and go to state 41
+    empty                          shift and go to state 42
+
+state 24
+
+    (36) vars_decl -> VAR ID list_ids COLON . type SEMI
+    (41) type -> . INT
+    (42) type -> . FLOAT
+
+    INT             shift and go to state 44
+    FLOAT           shift and go to state 45
+
+    type                           shift and go to state 43
+
+state 25
+
+    (37) list_ids -> COMMA ID . list_ids
+    (37) list_ids -> . COMMA ID list_ids
+    (38) list_ids -> . empty
+    (64) empty -> .
+
+    COMMA           shift and go to state 19
+    COLON           reduce using rule 64 (empty -> .)
+
+    list_ids                       shift and go to state 46
+    empty                          shift and go to state 20
+
+state 26
+
+    (1) program -> PROGRAM ID SEMI vars_decls func_decls MAIN body END .
+
+    $end            reduce using rule 1 (program -> PROGRAM ID SEMI vars_decls func_decls MAIN body END .)
+
+
+state 27
+
+    (9) body -> LBRACE statements . RBRACE
+
+    RBRACE          shift and go to state 47
+
+
+state 28
+
+    (10) statements -> statement . statements
+    (10) statements -> . statement statements
+    (11) statements -> . empty
+    (12) statement -> . assignment
+    (13) statement -> . condition
+    (14) statement -> . loop
+    (15) statement -> . func_call
+    (16) statement -> . print_stmt
+    (64) empty -> .
+    (17) assignment -> . ID EQ expression SEMI
+    (18) condition -> . IF LPAREN expression RPAREN body else_part SEMI
+    (21) loop -> . WHILE LPAREN expression RPAREN DO body SEMI
+    (22) func_call -> . ID LPAREN args RPAREN SEMI
+    (27) print_stmt -> . PRINT LPAREN print_args RPAREN SEMI
+
+    RBRACE          reduce using rule 64 (empty -> .)
+    ID              shift and go to state 35
+    IF              shift and go to state 36
+    WHILE           shift and go to state 37
+    PRINT           shift and go to state 38
+
+    statement                      shift and go to state 28
+    statements                     shift and go to state 48
+    empty                          shift and go to state 29
+    assignment                     shift and go to state 30
+    condition                      shift and go to state 31
+    loop                           shift and go to state 32
+    func_call                      shift and go to state 33
+    print_stmt                     shift and go to state 34
+
+state 29
+
+    (11) statements -> empty .
+
+    RBRACE          reduce using rule 11 (statements -> empty .)
+
+
+state 30
+
+    (12) statement -> assignment .
+
+    ID              reduce using rule 12 (statement -> assignment .)
+    IF              reduce using rule 12 (statement -> assignment .)
+    WHILE           reduce using rule 12 (statement -> assignment .)
+    PRINT           reduce using rule 12 (statement -> assignment .)
+    RBRACE          reduce using rule 12 (statement -> assignment .)
+
+
+state 31
+
+    (13) statement -> condition .
+
+    ID              reduce using rule 13 (statement -> condition .)
+    IF              reduce using rule 13 (statement -> condition .)
+    WHILE           reduce using rule 13 (statement -> condition .)
+    PRINT           reduce using rule 13 (statement -> condition .)
+    RBRACE          reduce using rule 13 (statement -> condition .)
+
+
+state 32
+
+    (14) statement -> loop .
+
+    ID              reduce using rule 14 (statement -> loop .)
+    IF              reduce using rule 14 (statement -> loop .)
+    WHILE           reduce using rule 14 (statement -> loop .)
+    PRINT           reduce using rule 14 (statement -> loop .)
+    RBRACE          reduce using rule 14 (statement -> loop .)
+
+
+state 33
+
+    (15) statement -> func_call .
+
+    ID              reduce using rule 15 (statement -> func_call .)
+    IF              reduce using rule 15 (statement -> func_call .)
+    WHILE           reduce using rule 15 (statement -> func_call .)
+    PRINT           reduce using rule 15 (statement -> func_call .)
+    RBRACE          reduce using rule 15 (statement -> func_call .)
+
+
+state 34
+
+    (16) statement -> print_stmt .
+
+    ID              reduce using rule 16 (statement -> print_stmt .)
+    IF              reduce using rule 16 (statement -> print_stmt .)
+    WHILE           reduce using rule 16 (statement -> print_stmt .)
+    PRINT           reduce using rule 16 (statement -> print_stmt .)
+    RBRACE          reduce using rule 16 (statement -> print_stmt .)
+
+
+state 35
+
+    (17) assignment -> ID . EQ expression SEMI
+    (22) func_call -> ID . LPAREN args RPAREN SEMI
+
+    EQ              shift and go to state 49
+    LPAREN          shift and go to state 50
+
+
+state 36
+
+    (18) condition -> IF . LPAREN expression RPAREN body else_part SEMI
+
+    LPAREN          shift and go to state 51
+
+
+state 37
+
+    (21) loop -> WHILE . LPAREN expression RPAREN DO body SEMI
+
+    LPAREN          shift and go to state 52
+
+
+state 38
+
+    (27) print_stmt -> PRINT . LPAREN print_args RPAREN SEMI
+
+    LPAREN          shift and go to state 53
+
+
+state 39
+
+    (7) param_list -> ID . COLON type
+    (8) param_list -> ID . COLON type COMMA param_list
+
+    COLON           shift and go to state 54
+
+
+state 40
+
+    (4) func_decl -> VOID ID LPAREN params . RPAREN LCO local_vars body RCO SEMI
+
+    RPAREN          shift and go to state 55
+
+
+state 41
+
+    (5) params -> param_list .
+
+    RPAREN          reduce using rule 5 (params -> param_list .)
+
+
+state 42
+
+    (6) params -> empty .
+
+    RPAREN          reduce using rule 6 (params -> empty .)
+
+
+state 43
+
+    (36) vars_decl -> VAR ID list_ids COLON type . SEMI
+
+    SEMI            shift and go to state 56
+
+
+state 44
+
+    (41) type -> INT .
+
+    SEMI            reduce using rule 41 (type -> INT .)
+    COMMA           reduce using rule 41 (type -> INT .)
+    RPAREN          reduce using rule 41 (type -> INT .)
+
+
+state 45
+
+    (42) type -> FLOAT .
+
+    SEMI            reduce using rule 42 (type -> FLOAT .)
+    COMMA           reduce using rule 42 (type -> FLOAT .)
+    RPAREN          reduce using rule 42 (type -> FLOAT .)
+
+
+state 46
+
+    (37) list_ids -> COMMA ID list_ids .
+
+    COLON           reduce using rule 37 (list_ids -> COMMA ID list_ids .)
+
+
+state 47
+
+    (9) body -> LBRACE statements RBRACE .
+
+    END             reduce using rule 9 (body -> LBRACE statements RBRACE .)
+    ELSE            reduce using rule 9 (body -> LBRACE statements RBRACE .)
+    SEMI            reduce using rule 9 (body -> LBRACE statements RBRACE .)
+    RCO             reduce using rule 9 (body -> LBRACE statements RBRACE .)
+
+
+state 48
+
+    (10) statements -> statement statements .
+
+    RBRACE          reduce using rule 10 (statements -> statement statements .)
+
+
+state 49
+
+    (17) assignment -> ID EQ . expression SEMI
+    (43) expression -> . simple_expression
+    (44) expression -> . simple_expression relop simple_expression
+    (45) simple_expression -> . term
+    (46) simple_expression -> . term PLUS simple_expression
+    (47) simple_expression -> . term MINUS simple_expression
+    (48) term -> . factor
+    (49) term -> . factor mulop term
+    (50) factor -> . LPAREN expression RPAREN
+    (51) factor -> . facestrc
+    (52) facestrc -> . PLUS faciden
+    (53) facestrc -> . MINUS faciden
+    (54) facestrc -> . faciden
+    (55) faciden -> . ID
+    (56) faciden -> . cte
+    (57) cte -> . CTE_INT
+    (58) cte -> . CTE_FLOAT
+
+    LPAREN          shift and go to state 64
+    PLUS            shift and go to state 61
+    MINUS           shift and go to state 62
+    ID              shift and go to state 57
+    CTE_INT         shift and go to state 68
+    CTE_FLOAT       shift and go to state 69
+
+    expression                     shift and go to state 58
+    simple_expression              shift and go to state 59
+    term                           shift and go to state 60
+    factor                         shift and go to state 63
+    facestrc                       shift and go to state 65
+    faciden                        shift and go to state 66
+    cte                            shift and go to state 67
+
+state 50
+
+    (22) func_call -> ID LPAREN . args RPAREN SEMI
+    (23) args -> . expression_list
+    (24) args -> . empty
+    (25) expression_list -> . expression
+    (26) expression_list -> . expression COMMA expression_list
+    (64) empty -> .
+    (43) expression -> . simple_expression
+    (44) expression -> . simple_expression relop simple_expression
+    (45) simple_expression -> . term
+    (46) simple_expression -> . term PLUS simple_expression
+    (47) simple_expression -> . term MINUS simple_expression
+    (48) term -> . factor
+    (49) term -> . factor mulop term
+    (50) factor -> . LPAREN expression RPAREN
+    (51) factor -> . facestrc
+    (52) facestrc -> . PLUS faciden
+    (53) facestrc -> . MINUS faciden
+    (54) facestrc -> . faciden
+    (55) faciden -> . ID
+    (56) faciden -> . cte
+    (57) cte -> . CTE_INT
+    (58) cte -> . CTE_FLOAT
+
+    RPAREN          reduce using rule 64 (empty -> .)
+    LPAREN          shift and go to state 64
+    PLUS            shift and go to state 61
+    MINUS           shift and go to state 62
+    ID              shift and go to state 57
+    CTE_INT         shift and go to state 68
+    CTE_FLOAT       shift and go to state 69
+
+    args                           shift and go to state 70
+    expression_list                shift and go to state 71
+    empty                          shift and go to state 72
+    expression                     shift and go to state 73
+    simple_expression              shift and go to state 59
+    term                           shift and go to state 60
+    factor                         shift and go to state 63
+    facestrc                       shift and go to state 65
+    faciden                        shift and go to state 66
+    cte                            shift and go to state 67
+
+state 51
+
+    (18) condition -> IF LPAREN . expression RPAREN body else_part SEMI
+    (43) expression -> . simple_expression
+    (44) expression -> . simple_expression relop simple_expression
+    (45) simple_expression -> . term
+    (46) simple_expression -> . term PLUS simple_expression
+    (47) simple_expression -> . term MINUS simple_expression
+    (48) term -> . factor
+    (49) term -> . factor mulop term
+    (50) factor -> . LPAREN expression RPAREN
+    (51) factor -> . facestrc
+    (52) facestrc -> . PLUS faciden
+    (53) facestrc -> . MINUS faciden
+    (54) facestrc -> . faciden
+    (55) faciden -> . ID
+    (56) faciden -> . cte
+    (57) cte -> . CTE_INT
+    (58) cte -> . CTE_FLOAT
+
+    LPAREN          shift and go to state 64
+    PLUS            shift and go to state 61
+    MINUS           shift and go to state 62
+    ID              shift and go to state 57
+    CTE_INT         shift and go to state 68
+    CTE_FLOAT       shift and go to state 69
+
+    expression                     shift and go to state 74
+    simple_expression              shift and go to state 59
+    term                           shift and go to state 60
+    factor                         shift and go to state 63
+    facestrc                       shift and go to state 65
+    faciden                        shift and go to state 66
+    cte                            shift and go to state 67
+
+state 52
+
+    (21) loop -> WHILE LPAREN . expression RPAREN DO body SEMI
+    (43) expression -> . simple_expression
+    (44) expression -> . simple_expression relop simple_expression
+    (45) simple_expression -> . term
+    (46) simple_expression -> . term PLUS simple_expression
+    (47) simple_expression -> . term MINUS simple_expression
+    (48) term -> . factor
+    (49) term -> . factor mulop term
+    (50) factor -> . LPAREN expression RPAREN
+    (51) factor -> . facestrc
+    (52) facestrc -> . PLUS faciden
+    (53) facestrc -> . MINUS faciden
+    (54) facestrc -> . faciden
+    (55) faciden -> . ID
+    (56) faciden -> . cte
+    (57) cte -> . CTE_INT
+    (58) cte -> . CTE_FLOAT
+
+    LPAREN          shift and go to state 64
+    PLUS            shift and go to state 61
+    MINUS           shift and go to state 62
+    ID              shift and go to state 57
+    CTE_INT         shift and go to state 68
+    CTE_FLOAT       shift and go to state 69
+
+    expression                     shift and go to state 75
+    simple_expression              shift and go to state 59
+    term                           shift and go to state 60
+    factor                         shift and go to state 63
+    facestrc                       shift and go to state 65
+    faciden                        shift and go to state 66
+    cte                            shift and go to state 67
+
+state 53
+
+    (27) print_stmt -> PRINT LPAREN . print_args RPAREN SEMI
+    (28) print_args -> . print_list
+    (29) print_args -> . empty
+    (30) print_list -> . printable
+    (31) print_list -> . printable COMMA print_list
+    (64) empty -> .
+    (32) printable -> . expression
+    (33) printable -> . CTE_STRING
+    (43) expression -> . simple_expression
+    (44) expression -> . simple_expression relop simple_expression
+    (45) simple_expression -> . term
+    (46) simple_expression -> . term PLUS simple_expression
+    (47) simple_expression -> . term MINUS simple_expression
+    (48) term -> . factor
+    (49) term -> . factor mulop term
+    (50) factor -> . LPAREN expression RPAREN
+    (51) factor -> . facestrc
+    (52) facestrc -> . PLUS faciden
+    (53) facestrc -> . MINUS faciden
+    (54) facestrc -> . faciden
+    (55) faciden -> . ID
+    (56) faciden -> . cte
+    (57) cte -> . CTE_INT
+    (58) cte -> . CTE_FLOAT
+
+    RPAREN          reduce using rule 64 (empty -> .)
+    CTE_STRING      shift and go to state 81
+    LPAREN          shift and go to state 64
+    PLUS            shift and go to state 61
+    MINUS           shift and go to state 62
+    ID              shift and go to state 57
+    CTE_INT         shift and go to state 68
+    CTE_FLOAT       shift and go to state 69
+
+    print_args                     shift and go to state 76
+    print_list                     shift and go to state 77
+    empty                          shift and go to state 78
+    printable                      shift and go to state 79
+    expression                     shift and go to state 80
+    simple_expression              shift and go to state 59
+    term                           shift and go to state 60
+    factor                         shift and go to state 63
+    facestrc                       shift and go to state 65
+    faciden                        shift and go to state 66
+    cte                            shift and go to state 67
+
+state 54
+
+    (7) param_list -> ID COLON . type
+    (8) param_list -> ID COLON . type COMMA param_list
+    (41) type -> . INT
+    (42) type -> . FLOAT
+
+    INT             shift and go to state 44
+    FLOAT           shift and go to state 45
+
+    type                           shift and go to state 82
+
+state 55
+
+    (4) func_decl -> VOID ID LPAREN params RPAREN . LCO local_vars body RCO SEMI
+
+    LCO             shift and go to state 83
+
+
+state 56
+
+    (36) vars_decl -> VAR ID list_ids COLON type SEMI .
+
+    VAR             reduce using rule 36 (vars_decl -> VAR ID list_ids COLON type SEMI .)
+    VOID            reduce using rule 36 (vars_decl -> VAR ID list_ids COLON type SEMI .)
+    MAIN            reduce using rule 36 (vars_decl -> VAR ID list_ids COLON type SEMI .)
+    LBRACE          reduce using rule 36 (vars_decl -> VAR ID list_ids COLON type SEMI .)
+
+
+state 57
+
+    (55) faciden -> ID .
+
+    MULT            reduce using rule 55 (faciden -> ID .)
+    DIV             reduce using rule 55 (faciden -> ID .)
+    PLUS            reduce using rule 55 (faciden -> ID .)
+    MINUS           reduce using rule 55 (faciden -> ID .)
+    LT              reduce using rule 55 (faciden -> ID .)
+    GT              reduce using rule 55 (faciden -> ID .)
+    NEQ             reduce using rule 55 (faciden -> ID .)
+    SEMI            reduce using rule 55 (faciden -> ID .)
+    COMMA           reduce using rule 55 (faciden -> ID .)
+    RPAREN          reduce using rule 55 (faciden -> ID .)
+
+
+state 58
+
+    (17) assignment -> ID EQ expression . SEMI
+
+    SEMI            shift and go to state 84
+
+
+state 59
+
+    (43) expression -> simple_expression .
+    (44) expression -> simple_expression . relop simple_expression
+    (59) relop -> . LT
+    (60) relop -> . GT
+    (61) relop -> . NEQ
+
+    SEMI            reduce using rule 43 (expression -> simple_expression .)
+    COMMA           reduce using rule 43 (expression -> simple_expression .)
+    RPAREN          reduce using rule 43 (expression -> simple_expression .)
+    LT              shift and go to state 86
+    GT              shift and go to state 87
+    NEQ             shift and go to state 88
+
+    relop                          shift and go to state 85
+
+state 60
+
+    (45) simple_expression -> term .
+    (46) simple_expression -> term . PLUS simple_expression
+    (47) simple_expression -> term . MINUS simple_expression
+
+    LT              reduce using rule 45 (simple_expression -> term .)
+    GT              reduce using rule 45 (simple_expression -> term .)
+    NEQ             reduce using rule 45 (simple_expression -> term .)
+    SEMI            reduce using rule 45 (simple_expression -> term .)
+    COMMA           reduce using rule 45 (simple_expression -> term .)
+    RPAREN          reduce using rule 45 (simple_expression -> term .)
+    PLUS            shift and go to state 89
+    MINUS           shift and go to state 90
+
+
+state 61
+
+    (52) facestrc -> PLUS . faciden
+    (55) faciden -> . ID
+    (56) faciden -> . cte
+    (57) cte -> . CTE_INT
+    (58) cte -> . CTE_FLOAT
+
+    ID              shift and go to state 57
+    CTE_INT         shift and go to state 68
+    CTE_FLOAT       shift and go to state 69
+
+    faciden                        shift and go to state 91
+    cte                            shift and go to state 67
+
+state 62
+
+    (53) facestrc -> MINUS . faciden
+    (55) faciden -> . ID
+    (56) faciden -> . cte
+    (57) cte -> . CTE_INT
+    (58) cte -> . CTE_FLOAT
+
+    ID              shift and go to state 57
+    CTE_INT         shift and go to state 68
+    CTE_FLOAT       shift and go to state 69
+
+    faciden                        shift and go to state 92
+    cte                            shift and go to state 67
+
+state 63
+
+    (48) term -> factor .
+    (49) term -> factor . mulop term
+    (62) mulop -> . MULT
+    (63) mulop -> . DIV
+
+    PLUS            reduce using rule 48 (term -> factor .)
+    MINUS           reduce using rule 48 (term -> factor .)
+    LT              reduce using rule 48 (term -> factor .)
+    GT              reduce using rule 48 (term -> factor .)
+    NEQ             reduce using rule 48 (term -> factor .)
+    SEMI            reduce using rule 48 (term -> factor .)
+    COMMA           reduce using rule 48 (term -> factor .)
+    RPAREN          reduce using rule 48 (term -> factor .)
+    MULT            shift and go to state 94
+    DIV             shift and go to state 95
+
+    mulop                          shift and go to state 93
+
+state 64
+
+    (50) factor -> LPAREN . expression RPAREN
+    (43) expression -> . simple_expression
+    (44) expression -> . simple_expression relop simple_expression
+    (45) simple_expression -> . term
+    (46) simple_expression -> . term PLUS simple_expression
+    (47) simple_expression -> . term MINUS simple_expression
+    (48) term -> . factor
+    (49) term -> . factor mulop term
+    (50) factor -> . LPAREN expression RPAREN
+    (51) factor -> . facestrc
+    (52) facestrc -> . PLUS faciden
+    (53) facestrc -> . MINUS faciden
+    (54) facestrc -> . faciden
+    (55) faciden -> . ID
+    (56) faciden -> . cte
+    (57) cte -> . CTE_INT
+    (58) cte -> . CTE_FLOAT
+
+    LPAREN          shift and go to state 64
+    PLUS            shift and go to state 61
+    MINUS           shift and go to state 62
+    ID              shift and go to state 57
+    CTE_INT         shift and go to state 68
+    CTE_FLOAT       shift and go to state 69
+
+    expression                     shift and go to state 96
+    simple_expression              shift and go to state 59
+    term                           shift and go to state 60
+    factor                         shift and go to state 63
+    facestrc                       shift and go to state 65
+    faciden                        shift and go to state 66
+    cte                            shift and go to state 67
+
+state 65
+
+    (51) factor -> facestrc .
+
+    MULT            reduce using rule 51 (factor -> facestrc .)
+    DIV             reduce using rule 51 (factor -> facestrc .)
+    PLUS            reduce using rule 51 (factor -> facestrc .)
+    MINUS           reduce using rule 51 (factor -> facestrc .)
+    LT              reduce using rule 51 (factor -> facestrc .)
+    GT              reduce using rule 51 (factor -> facestrc .)
+    NEQ             reduce using rule 51 (factor -> facestrc .)
+    SEMI            reduce using rule 51 (factor -> facestrc .)
+    COMMA           reduce using rule 51 (factor -> facestrc .)
+    RPAREN          reduce using rule 51 (factor -> facestrc .)
+
+
+state 66
+
+    (54) facestrc -> faciden .
+
+    MULT            reduce using rule 54 (facestrc -> faciden .)
+    DIV             reduce using rule 54 (facestrc -> faciden .)
+    PLUS            reduce using rule 54 (facestrc -> faciden .)
+    MINUS           reduce using rule 54 (facestrc -> faciden .)
+    LT              reduce using rule 54 (facestrc -> faciden .)
+    GT              reduce using rule 54 (facestrc -> faciden .)
+    NEQ             reduce using rule 54 (facestrc -> faciden .)
+    SEMI            reduce using rule 54 (facestrc -> faciden .)
+    COMMA           reduce using rule 54 (facestrc -> faciden .)
+    RPAREN          reduce using rule 54 (facestrc -> faciden .)
+
+
+state 67
+
+    (56) faciden -> cte .
+
+    MULT            reduce using rule 56 (faciden -> cte .)
+    DIV             reduce using rule 56 (faciden -> cte .)
+    PLUS            reduce using rule 56 (faciden -> cte .)
+    MINUS           reduce using rule 56 (faciden -> cte .)
+    LT              reduce using rule 56 (faciden -> cte .)
+    GT              reduce using rule 56 (faciden -> cte .)
+    NEQ             reduce using rule 56 (faciden -> cte .)
+    SEMI            reduce using rule 56 (faciden -> cte .)
+    COMMA           reduce using rule 56 (faciden -> cte .)
+    RPAREN          reduce using rule 56 (faciden -> cte .)
+
+
+state 68
+
+    (57) cte -> CTE_INT .
+
+    MULT            reduce using rule 57 (cte -> CTE_INT .)
+    DIV             reduce using rule 57 (cte -> CTE_INT .)
+    PLUS            reduce using rule 57 (cte -> CTE_INT .)
+    MINUS           reduce using rule 57 (cte -> CTE_INT .)
+    LT              reduce using rule 57 (cte -> CTE_INT .)
+    GT              reduce using rule 57 (cte -> CTE_INT .)
+    NEQ             reduce using rule 57 (cte -> CTE_INT .)
+    SEMI            reduce using rule 57 (cte -> CTE_INT .)
+    COMMA           reduce using rule 57 (cte -> CTE_INT .)
+    RPAREN          reduce using rule 57 (cte -> CTE_INT .)
+
+
+state 69
+
+    (58) cte -> CTE_FLOAT .
+
+    MULT            reduce using rule 58 (cte -> CTE_FLOAT .)
+    DIV             reduce using rule 58 (cte -> CTE_FLOAT .)
+    PLUS            reduce using rule 58 (cte -> CTE_FLOAT .)
+    MINUS           reduce using rule 58 (cte -> CTE_FLOAT .)
+    LT              reduce using rule 58 (cte -> CTE_FLOAT .)
+    GT              reduce using rule 58 (cte -> CTE_FLOAT .)
+    NEQ             reduce using rule 58 (cte -> CTE_FLOAT .)
+    SEMI            reduce using rule 58 (cte -> CTE_FLOAT .)
+    COMMA           reduce using rule 58 (cte -> CTE_FLOAT .)
+    RPAREN          reduce using rule 58 (cte -> CTE_FLOAT .)
+
+
+state 70
+
+    (22) func_call -> ID LPAREN args . RPAREN SEMI
+
+    RPAREN          shift and go to state 97
+
+
+state 71
+
+    (23) args -> expression_list .
+
+    RPAREN          reduce using rule 23 (args -> expression_list .)
+
+
+state 72
+
+    (24) args -> empty .
+
+    RPAREN          reduce using rule 24 (args -> empty .)
+
+
+state 73
+
+    (25) expression_list -> expression .
+    (26) expression_list -> expression . COMMA expression_list
+
+    RPAREN          reduce using rule 25 (expression_list -> expression .)
+    COMMA           shift and go to state 98
+
+
+state 74
+
+    (18) condition -> IF LPAREN expression . RPAREN body else_part SEMI
+
+    RPAREN          shift and go to state 99
+
+
+state 75
+
+    (21) loop -> WHILE LPAREN expression . RPAREN DO body SEMI
+
+    RPAREN          shift and go to state 100
+
+
+state 76
+
+    (27) print_stmt -> PRINT LPAREN print_args . RPAREN SEMI
+
+    RPAREN          shift and go to state 101
+
+
+state 77
+
+    (28) print_args -> print_list .
+
+    RPAREN          reduce using rule 28 (print_args -> print_list .)
+
+
+state 78
+
+    (29) print_args -> empty .
+
+    RPAREN          reduce using rule 29 (print_args -> empty .)
+
+
+state 79
+
+    (30) print_list -> printable .
+    (31) print_list -> printable . COMMA print_list
+
+    RPAREN          reduce using rule 30 (print_list -> printable .)
+    COMMA           shift and go to state 102
+
+
+state 80
+
+    (32) printable -> expression .
+
+    COMMA           reduce using rule 32 (printable -> expression .)
+    RPAREN          reduce using rule 32 (printable -> expression .)
+
+
+state 81
+
+    (33) printable -> CTE_STRING .
+
+    COMMA           reduce using rule 33 (printable -> CTE_STRING .)
+    RPAREN          reduce using rule 33 (printable -> CTE_STRING .)
+
+
+state 82
+
+    (7) param_list -> ID COLON type .
+    (8) param_list -> ID COLON type . COMMA param_list
+
+    RPAREN          reduce using rule 7 (param_list -> ID COLON type .)
+    COMMA           shift and go to state 103
+
+
+state 83
+
+    (4) func_decl -> VOID ID LPAREN params RPAREN LCO . local_vars body RCO SEMI
+    (39) local_vars -> . vars_decl local_vars
+    (40) local_vars -> . empty
+    (36) vars_decl -> . VAR ID list_ids COLON type SEMI
+    (64) empty -> .
+
+    VAR             shift and go to state 8
+    LBRACE          reduce using rule 64 (empty -> .)
+
+    local_vars                     shift and go to state 104
+    vars_decl                      shift and go to state 105
+    empty                          shift and go to state 106
+
+state 84
+
+    (17) assignment -> ID EQ expression SEMI .
+
+    ID              reduce using rule 17 (assignment -> ID EQ expression SEMI .)
+    IF              reduce using rule 17 (assignment -> ID EQ expression SEMI .)
+    WHILE           reduce using rule 17 (assignment -> ID EQ expression SEMI .)
+    PRINT           reduce using rule 17 (assignment -> ID EQ expression SEMI .)
+    RBRACE          reduce using rule 17 (assignment -> ID EQ expression SEMI .)
+
+
+state 85
+
+    (44) expression -> simple_expression relop . simple_expression
+    (45) simple_expression -> . term
+    (46) simple_expression -> . term PLUS simple_expression
+    (47) simple_expression -> . term MINUS simple_expression
+    (48) term -> . factor
+    (49) term -> . factor mulop term
+    (50) factor -> . LPAREN expression RPAREN
+    (51) factor -> . facestrc
+    (52) facestrc -> . PLUS faciden
+    (53) facestrc -> . MINUS faciden
+    (54) facestrc -> . faciden
+    (55) faciden -> . ID
+    (56) faciden -> . cte
+    (57) cte -> . CTE_INT
+    (58) cte -> . CTE_FLOAT
+
+    LPAREN          shift and go to state 64
+    PLUS            shift and go to state 61
+    MINUS           shift and go to state 62
+    ID              shift and go to state 57
+    CTE_INT         shift and go to state 68
+    CTE_FLOAT       shift and go to state 69
+
+    simple_expression              shift and go to state 107
+    term                           shift and go to state 60
+    factor                         shift and go to state 63
+    facestrc                       shift and go to state 65
+    faciden                        shift and go to state 66
+    cte                            shift and go to state 67
+
+state 86
+
+    (59) relop -> LT .
+
+    LPAREN          reduce using rule 59 (relop -> LT .)
+    PLUS            reduce using rule 59 (relop -> LT .)
+    MINUS           reduce using rule 59 (relop -> LT .)
+    ID              reduce using rule 59 (relop -> LT .)
+    CTE_INT         reduce using rule 59 (relop -> LT .)
+    CTE_FLOAT       reduce using rule 59 (relop -> LT .)
+
+
+state 87
+
+    (60) relop -> GT .
+
+    LPAREN          reduce using rule 60 (relop -> GT .)
+    PLUS            reduce using rule 60 (relop -> GT .)
+    MINUS           reduce using rule 60 (relop -> GT .)
+    ID              reduce using rule 60 (relop -> GT .)
+    CTE_INT         reduce using rule 60 (relop -> GT .)
+    CTE_FLOAT       reduce using rule 60 (relop -> GT .)
+
+
+state 88
+
+    (61) relop -> NEQ .
+
+    LPAREN          reduce using rule 61 (relop -> NEQ .)
+    PLUS            reduce using rule 61 (relop -> NEQ .)
+    MINUS           reduce using rule 61 (relop -> NEQ .)
+    ID              reduce using rule 61 (relop -> NEQ .)
+    CTE_INT         reduce using rule 61 (relop -> NEQ .)
+    CTE_FLOAT       reduce using rule 61 (relop -> NEQ .)
+
+
+state 89
+
+    (46) simple_expression -> term PLUS . simple_expression
+    (45) simple_expression -> . term
+    (46) simple_expression -> . term PLUS simple_expression
+    (47) simple_expression -> . term MINUS simple_expression
+    (48) term -> . factor
+    (49) term -> . factor mulop term
+    (50) factor -> . LPAREN expression RPAREN
+    (51) factor -> . facestrc
+    (52) facestrc -> . PLUS faciden
+    (53) facestrc -> . MINUS faciden
+    (54) facestrc -> . faciden
+    (55) faciden -> . ID
+    (56) faciden -> . cte
+    (57) cte -> . CTE_INT
+    (58) cte -> . CTE_FLOAT
+
+    LPAREN          shift and go to state 64
+    PLUS            shift and go to state 61
+    MINUS           shift and go to state 62
+    ID              shift and go to state 57
+    CTE_INT         shift and go to state 68
+    CTE_FLOAT       shift and go to state 69
+
+    term                           shift and go to state 60
+    simple_expression              shift and go to state 108
+    factor                         shift and go to state 63
+    facestrc                       shift and go to state 65
+    faciden                        shift and go to state 66
+    cte                            shift and go to state 67
+
+state 90
+
+    (47) simple_expression -> term MINUS . simple_expression
+    (45) simple_expression -> . term
+    (46) simple_expression -> . term PLUS simple_expression
+    (47) simple_expression -> . term MINUS simple_expression
+    (48) term -> . factor
+    (49) term -> . factor mulop term
+    (50) factor -> . LPAREN expression RPAREN
+    (51) factor -> . facestrc
+    (52) facestrc -> . PLUS faciden
+    (53) facestrc -> . MINUS faciden
+    (54) facestrc -> . faciden
+    (55) faciden -> . ID
+    (56) faciden -> . cte
+    (57) cte -> . CTE_INT
+    (58) cte -> . CTE_FLOAT
+
+    LPAREN          shift and go to state 64
+    PLUS            shift and go to state 61
+    MINUS           shift and go to state 62
+    ID              shift and go to state 57
+    CTE_INT         shift and go to state 68
+    CTE_FLOAT       shift and go to state 69
+
+    term                           shift and go to state 60
+    simple_expression              shift and go to state 109
+    factor                         shift and go to state 63
+    facestrc                       shift and go to state 65
+    faciden                        shift and go to state 66
+    cte                            shift and go to state 67
+
+state 91
+
+    (52) facestrc -> PLUS faciden .
+
+    MULT            reduce using rule 52 (facestrc -> PLUS faciden .)
+    DIV             reduce using rule 52 (facestrc -> PLUS faciden .)
+    PLUS            reduce using rule 52 (facestrc -> PLUS faciden .)
+    MINUS           reduce using rule 52 (facestrc -> PLUS faciden .)
+    LT              reduce using rule 52 (facestrc -> PLUS faciden .)
+    GT              reduce using rule 52 (facestrc -> PLUS faciden .)
+    NEQ             reduce using rule 52 (facestrc -> PLUS faciden .)
+    SEMI            reduce using rule 52 (facestrc -> PLUS faciden .)
+    COMMA           reduce using rule 52 (facestrc -> PLUS faciden .)
+    RPAREN          reduce using rule 52 (facestrc -> PLUS faciden .)
+
+
+state 92
+
+    (53) facestrc -> MINUS faciden .
+
+    MULT            reduce using rule 53 (facestrc -> MINUS faciden .)
+    DIV             reduce using rule 53 (facestrc -> MINUS faciden .)
+    PLUS            reduce using rule 53 (facestrc -> MINUS faciden .)
+    MINUS           reduce using rule 53 (facestrc -> MINUS faciden .)
+    LT              reduce using rule 53 (facestrc -> MINUS faciden .)
+    GT              reduce using rule 53 (facestrc -> MINUS faciden .)
+    NEQ             reduce using rule 53 (facestrc -> MINUS faciden .)
+    SEMI            reduce using rule 53 (facestrc -> MINUS faciden .)
+    COMMA           reduce using rule 53 (facestrc -> MINUS faciden .)
+    RPAREN          reduce using rule 53 (facestrc -> MINUS faciden .)
+
+
+state 93
+
+    (49) term -> factor mulop . term
+    (48) term -> . factor
+    (49) term -> . factor mulop term
+    (50) factor -> . LPAREN expression RPAREN
+    (51) factor -> . facestrc
+    (52) facestrc -> . PLUS faciden
+    (53) facestrc -> . MINUS faciden
+    (54) facestrc -> . faciden
+    (55) faciden -> . ID
+    (56) faciden -> . cte
+    (57) cte -> . CTE_INT
+    (58) cte -> . CTE_FLOAT
+
+    LPAREN          shift and go to state 64
+    PLUS            shift and go to state 61
+    MINUS           shift and go to state 62
+    ID              shift and go to state 57
+    CTE_INT         shift and go to state 68
+    CTE_FLOAT       shift and go to state 69
+
+    factor                         shift and go to state 63
+    term                           shift and go to state 110
+    facestrc                       shift and go to state 65
+    faciden                        shift and go to state 66
+    cte                            shift and go to state 67
+
+state 94
+
+    (62) mulop -> MULT .
+
+    LPAREN          reduce using rule 62 (mulop -> MULT .)
+    PLUS            reduce using rule 62 (mulop -> MULT .)
+    MINUS           reduce using rule 62 (mulop -> MULT .)
+    ID              reduce using rule 62 (mulop -> MULT .)
+    CTE_INT         reduce using rule 62 (mulop -> MULT .)
+    CTE_FLOAT       reduce using rule 62 (mulop -> MULT .)
+
+
+state 95
+
+    (63) mulop -> DIV .
+
+    LPAREN          reduce using rule 63 (mulop -> DIV .)
+    PLUS            reduce using rule 63 (mulop -> DIV .)
+    MINUS           reduce using rule 63 (mulop -> DIV .)
+    ID              reduce using rule 63 (mulop -> DIV .)
+    CTE_INT         reduce using rule 63 (mulop -> DIV .)
+    CTE_FLOAT       reduce using rule 63 (mulop -> DIV .)
+
+
+state 96
+
+    (50) factor -> LPAREN expression . RPAREN
+
+    RPAREN          shift and go to state 111
+
+
+state 97
+
+    (22) func_call -> ID LPAREN args RPAREN . SEMI
+
+    SEMI            shift and go to state 112
+
+
+state 98
+
+    (26) expression_list -> expression COMMA . expression_list
+    (25) expression_list -> . expression
+    (26) expression_list -> . expression COMMA expression_list
+    (43) expression -> . simple_expression
+    (44) expression -> . simple_expression relop simple_expression
+    (45) simple_expression -> . term
+    (46) simple_expression -> . term PLUS simple_expression
+    (47) simple_expression -> . term MINUS simple_expression
+    (48) term -> . factor
+    (49) term -> . factor mulop term
+    (50) factor -> . LPAREN expression RPAREN
+    (51) factor -> . facestrc
+    (52) facestrc -> . PLUS faciden
+    (53) facestrc -> . MINUS faciden
+    (54) facestrc -> . faciden
+    (55) faciden -> . ID
+    (56) faciden -> . cte
+    (57) cte -> . CTE_INT
+    (58) cte -> . CTE_FLOAT
+
+    LPAREN          shift and go to state 64
+    PLUS            shift and go to state 61
+    MINUS           shift and go to state 62
+    ID              shift and go to state 57
+    CTE_INT         shift and go to state 68
+    CTE_FLOAT       shift and go to state 69
+
+    expression                     shift and go to state 73
+    expression_list                shift and go to state 113
+    simple_expression              shift and go to state 59
+    term                           shift and go to state 60
+    factor                         shift and go to state 63
+    facestrc                       shift and go to state 65
+    faciden                        shift and go to state 66
+    cte                            shift and go to state 67
+
+state 99
+
+    (18) condition -> IF LPAREN expression RPAREN . body else_part SEMI
+    (9) body -> . LBRACE statements RBRACE
+
+    LBRACE          shift and go to state 22
+
+    body                           shift and go to state 114
+
+state 100
+
+    (21) loop -> WHILE LPAREN expression RPAREN . DO body SEMI
+
+    DO              shift and go to state 115
+
+
+state 101
+
+    (27) print_stmt -> PRINT LPAREN print_args RPAREN . SEMI
+
+    SEMI            shift and go to state 116
+
+
+state 102
+
+    (31) print_list -> printable COMMA . print_list
+    (30) print_list -> . printable
+    (31) print_list -> . printable COMMA print_list
+    (32) printable -> . expression
+    (33) printable -> . CTE_STRING
+    (43) expression -> . simple_expression
+    (44) expression -> . simple_expression relop simple_expression
+    (45) simple_expression -> . term
+    (46) simple_expression -> . term PLUS simple_expression
+    (47) simple_expression -> . term MINUS simple_expression
+    (48) term -> . factor
+    (49) term -> . factor mulop term
+    (50) factor -> . LPAREN expression RPAREN
+    (51) factor -> . facestrc
+    (52) facestrc -> . PLUS faciden
+    (53) facestrc -> . MINUS faciden
+    (54) facestrc -> . faciden
+    (55) faciden -> . ID
+    (56) faciden -> . cte
+    (57) cte -> . CTE_INT
+    (58) cte -> . CTE_FLOAT
+
+    CTE_STRING      shift and go to state 81
+    LPAREN          shift and go to state 64
+    PLUS            shift and go to state 61
+    MINUS           shift and go to state 62
+    ID              shift and go to state 57
+    CTE_INT         shift and go to state 68
+    CTE_FLOAT       shift and go to state 69
+
+    printable                      shift and go to state 79
+    print_list                     shift and go to state 117
+    expression                     shift and go to state 80
+    simple_expression              shift and go to state 59
+    term                           shift and go to state 60
+    factor                         shift and go to state 63
+    facestrc                       shift and go to state 65
+    faciden                        shift and go to state 66
+    cte                            shift and go to state 67
+
+state 103
+
+    (8) param_list -> ID COLON type COMMA . param_list
+    (7) param_list -> . ID COLON type
+    (8) param_list -> . ID COLON type COMMA param_list
+
+    ID              shift and go to state 39
+
+    param_list                     shift and go to state 118
+
+state 104
+
+    (4) func_decl -> VOID ID LPAREN params RPAREN LCO local_vars . body RCO SEMI
+    (9) body -> . LBRACE statements RBRACE
+
+    LBRACE          shift and go to state 22
+
+    body                           shift and go to state 119
+
+state 105
+
+    (39) local_vars -> vars_decl . local_vars
+    (39) local_vars -> . vars_decl local_vars
+    (40) local_vars -> . empty
+    (36) vars_decl -> . VAR ID list_ids COLON type SEMI
+    (64) empty -> .
+
+    VAR             shift and go to state 8
+    LBRACE          reduce using rule 64 (empty -> .)
+
+    vars_decl                      shift and go to state 105
+    local_vars                     shift and go to state 120
+    empty                          shift and go to state 106
+
+state 106
+
+    (40) local_vars -> empty .
+
+    LBRACE          reduce using rule 40 (local_vars -> empty .)
+
+
+state 107
+
+    (44) expression -> simple_expression relop simple_expression .
+
+    SEMI            reduce using rule 44 (expression -> simple_expression relop simple_expression .)
+    COMMA           reduce using rule 44 (expression -> simple_expression relop simple_expression .)
+    RPAREN          reduce using rule 44 (expression -> simple_expression relop simple_expression .)
+
+
+state 108
+
+    (46) simple_expression -> term PLUS simple_expression .
+
+    LT              reduce using rule 46 (simple_expression -> term PLUS simple_expression .)
+    GT              reduce using rule 46 (simple_expression -> term PLUS simple_expression .)
+    NEQ             reduce using rule 46 (simple_expression -> term PLUS simple_expression .)
+    SEMI            reduce using rule 46 (simple_expression -> term PLUS simple_expression .)
+    COMMA           reduce using rule 46 (simple_expression -> term PLUS simple_expression .)
+    RPAREN          reduce using rule 46 (simple_expression -> term PLUS simple_expression .)
+
+
+state 109
+
+    (47) simple_expression -> term MINUS simple_expression .
+
+    LT              reduce using rule 47 (simple_expression -> term MINUS simple_expression .)
+    GT              reduce using rule 47 (simple_expression -> term MINUS simple_expression .)
+    NEQ             reduce using rule 47 (simple_expression -> term MINUS simple_expression .)
+    SEMI            reduce using rule 47 (simple_expression -> term MINUS simple_expression .)
+    COMMA           reduce using rule 47 (simple_expression -> term MINUS simple_expression .)
+    RPAREN          reduce using rule 47 (simple_expression -> term MINUS simple_expression .)
+
+
+state 110
+
+    (49) term -> factor mulop term .
+
+    PLUS            reduce using rule 49 (term -> factor mulop term .)
+    MINUS           reduce using rule 49 (term -> factor mulop term .)
+    LT              reduce using rule 49 (term -> factor mulop term .)
+    GT              reduce using rule 49 (term -> factor mulop term .)
+    NEQ             reduce using rule 49 (term -> factor mulop term .)
+    SEMI            reduce using rule 49 (term -> factor mulop term .)
+    COMMA           reduce using rule 49 (term -> factor mulop term .)
+    RPAREN          reduce using rule 49 (term -> factor mulop term .)
+
+
+state 111
+
+    (50) factor -> LPAREN expression RPAREN .
+
+    MULT            reduce using rule 50 (factor -> LPAREN expression RPAREN .)
+    DIV             reduce using rule 50 (factor -> LPAREN expression RPAREN .)
+    PLUS            reduce using rule 50 (factor -> LPAREN expression RPAREN .)
+    MINUS           reduce using rule 50 (factor -> LPAREN expression RPAREN .)
+    LT              reduce using rule 50 (factor -> LPAREN expression RPAREN .)
+    GT              reduce using rule 50 (factor -> LPAREN expression RPAREN .)
+    NEQ             reduce using rule 50 (factor -> LPAREN expression RPAREN .)
+    SEMI            reduce using rule 50 (factor -> LPAREN expression RPAREN .)
+    COMMA           reduce using rule 50 (factor -> LPAREN expression RPAREN .)
+    RPAREN          reduce using rule 50 (factor -> LPAREN expression RPAREN .)
+
+
+state 112
+
+    (22) func_call -> ID LPAREN args RPAREN SEMI .
+
+    ID              reduce using rule 22 (func_call -> ID LPAREN args RPAREN SEMI .)
+    IF              reduce using rule 22 (func_call -> ID LPAREN args RPAREN SEMI .)
+    WHILE           reduce using rule 22 (func_call -> ID LPAREN args RPAREN SEMI .)
+    PRINT           reduce using rule 22 (func_call -> ID LPAREN args RPAREN SEMI .)
+    RBRACE          reduce using rule 22 (func_call -> ID LPAREN args RPAREN SEMI .)
+
+
+state 113
+
+    (26) expression_list -> expression COMMA expression_list .
+
+    RPAREN          reduce using rule 26 (expression_list -> expression COMMA expression_list .)
+
+
+state 114
+
+    (18) condition -> IF LPAREN expression RPAREN body . else_part SEMI
+    (19) else_part -> . ELSE body
+    (20) else_part -> . empty
+    (64) empty -> .
+
+    ELSE            shift and go to state 122
+    SEMI            reduce using rule 64 (empty -> .)
+
+    else_part                      shift and go to state 121
+    empty                          shift and go to state 123
+
+state 115
+
+    (21) loop -> WHILE LPAREN expression RPAREN DO . body SEMI
+    (9) body -> . LBRACE statements RBRACE
+
+    LBRACE          shift and go to state 22
+
+    body                           shift and go to state 124
+
+state 116
+
+    (27) print_stmt -> PRINT LPAREN print_args RPAREN SEMI .
+
+    ID              reduce using rule 27 (print_stmt -> PRINT LPAREN print_args RPAREN SEMI .)
+    IF              reduce using rule 27 (print_stmt -> PRINT LPAREN print_args RPAREN SEMI .)
+    WHILE           reduce using rule 27 (print_stmt -> PRINT LPAREN print_args RPAREN SEMI .)
+    PRINT           reduce using rule 27 (print_stmt -> PRINT LPAREN print_args RPAREN SEMI .)
+    RBRACE          reduce using rule 27 (print_stmt -> PRINT LPAREN print_args RPAREN SEMI .)
+
+
+state 117
+
+    (31) print_list -> printable COMMA print_list .
+
+    RPAREN          reduce using rule 31 (print_list -> printable COMMA print_list .)
+
+
+state 118
+
+    (8) param_list -> ID COLON type COMMA param_list .
+
+    RPAREN          reduce using rule 8 (param_list -> ID COLON type COMMA param_list .)
+
+
+state 119
+
+    (4) func_decl -> VOID ID LPAREN params RPAREN LCO local_vars body . RCO SEMI
+
+    RCO             shift and go to state 125
+
+
+state 120
+
+    (39) local_vars -> vars_decl local_vars .
+
+    LBRACE          reduce using rule 39 (local_vars -> vars_decl local_vars .)
+
+
+state 121
+
+    (18) condition -> IF LPAREN expression RPAREN body else_part . SEMI
+
+    SEMI            shift and go to state 126
+
+
+state 122
+
+    (19) else_part -> ELSE . body
+    (9) body -> . LBRACE statements RBRACE
+
+    LBRACE          shift and go to state 22
+
+    body                           shift and go to state 127
+
+state 123
+
+    (20) else_part -> empty .
+
+    SEMI            reduce using rule 20 (else_part -> empty .)
+
+
+state 124
+
+    (21) loop -> WHILE LPAREN expression RPAREN DO body . SEMI
+
+    SEMI            shift and go to state 128
+
+
+state 125
+
+    (4) func_decl -> VOID ID LPAREN params RPAREN LCO local_vars body RCO . SEMI
+
+    SEMI            shift and go to state 129
+
+
+state 126
+
+    (18) condition -> IF LPAREN expression RPAREN body else_part SEMI .
+
+    ID              reduce using rule 18 (condition -> IF LPAREN expression RPAREN body else_part SEMI .)
+    IF              reduce using rule 18 (condition -> IF LPAREN expression RPAREN body else_part SEMI .)
+    WHILE           reduce using rule 18 (condition -> IF LPAREN expression RPAREN body else_part SEMI .)
+    PRINT           reduce using rule 18 (condition -> IF LPAREN expression RPAREN body else_part SEMI .)
+    RBRACE          reduce using rule 18 (condition -> IF LPAREN expression RPAREN body else_part SEMI .)
+
+
+state 127
+
+    (19) else_part -> ELSE body .
+
+    SEMI            reduce using rule 19 (else_part -> ELSE body .)
+
+
+state 128
+
+    (21) loop -> WHILE LPAREN expression RPAREN DO body SEMI .
+
+    ID              reduce using rule 21 (loop -> WHILE LPAREN expression RPAREN DO body SEMI .)
+    IF              reduce using rule 21 (loop -> WHILE LPAREN expression RPAREN DO body SEMI .)
+    WHILE           reduce using rule 21 (loop -> WHILE LPAREN expression RPAREN DO body SEMI .)
+    PRINT           reduce using rule 21 (loop -> WHILE LPAREN expression RPAREN DO body SEMI .)
+    RBRACE          reduce using rule 21 (loop -> WHILE LPAREN expression RPAREN DO body SEMI .)
+
+
+state 129
+
+    (4) func_decl -> VOID ID LPAREN params RPAREN LCO local_vars body RCO SEMI .
+
+    VOID            reduce using rule 4 (func_decl -> VOID ID LPAREN params RPAREN LCO local_vars body RCO SEMI .)
+    MAIN            reduce using rule 4 (func_decl -> VOID ID LPAREN params RPAREN LCO local_vars body RCO SEMI .)
 

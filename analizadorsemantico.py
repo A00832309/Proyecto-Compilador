@@ -1,11 +1,7 @@
 
 class analizadorsemantico:
     def __init__(self):
-        self.pila_operandos = []
-        self.pila_tipos = []
-        self.pila_operadores = []
-        self.cuadruplos = []
-        self.temporal_contador = 1
+
 
         self.directorio_Funk = {
             'global': {
@@ -143,65 +139,6 @@ class analizadorsemantico:
                 print(f"    - {var_name} : {var_type}")
             print("----------------------------------")
 
-    def nuevo_temporal(self):
-        temp_name = f"t{self.temporal_contador}"
-        self.temporal_contador += 1
-        return temp_name
-
-    def generar_cuadruplo(self):
-        if len(self.pila_operadores) == 0 or len(self.pila_operandos) < 2 or len(self.pila_tipos) < 2:
-            return
-
-        operador = self.pila_operadores.pop()
-        derecho = self.pila_operandos.pop()
-        tipo_derecho = self.pila_tipos.pop()
-        izquierdo = self.pila_operandos.pop()
-        tipo_izquierdo = self.pila_tipos.pop()
-
-        try:
-            tipo_resultado = self.checar_operador(tipo_izquierdo, operador, tipo_derecho)
-        except Exception as e:
-            raise Exception(f"Error de tipos en operación: {e}")
-
-        temporal = self.nuevo_temporal()
-        self.cuadruplos.append((operador, izquierdo, derecho, temporal))
-
-        # Guardar el resultado temporal para usar en operaciones posteriores
-        self.pila_operandos.append(temporal)
-        self.pila_tipos.append(tipo_resultado)
-
-    def generar_cuadruplo_asignacion(self, destino):
-        if len(self.pila_operandos) < 1 or len(self.pila_tipos) < 1:
-            raise Exception("Error: No hay valor para asignar")
-
-        valor = self.pila_operandos.pop()
-        tipo_valor = self.pila_tipos.pop()
-        tipo_destino = self.obtener_tipo_variable(destino)
-
-        if tipo_destino != tipo_valor:
-            raise Exception(f"Error de tipos en asignación: {tipo_destino} != {tipo_valor}")
-
-        self.cuadruplos.append(('=', valor, None, destino))
-
-    def generar_cuadruplo_condicion(self, operador):
-        if len(self.pila_operandos) < 2 or len(self.pila_tipos) < 2:
-            raise Exception("Error: Condición incompleta")
-
-        derecho = self.pila_operandos.pop()
-        tipo_derecho = self.pila_tipos.pop()
-        izquierdo = self.pila_operandos.pop()
-        tipo_izquierdo = self.pila_tipos.pop()
-
-        try:
-            tipo_resultado = self.checar_operador(tipo_izquierdo, operador, tipo_derecho)
-        except Exception as e:
-            raise Exception(f"Error de tipos en condición: {e}")
-
-        # Para condiciones, el resultado es un salto condicional
-        temporal = self.nuevo_temporal()
-        self.cuadruplos.append((operador, izquierdo, derecho, temporal))
-
-        return temporal  # Devuelve el temporal que puede usarse para el salto
 
 
 

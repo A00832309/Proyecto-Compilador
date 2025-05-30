@@ -1,9 +1,12 @@
-from analizadorsemantico import analizadorsemantico  # Importa la clase directamente
+from analizadorsemantico import analizadorsemantico
 import ply.yacc as yacc
+from cuadruplos import CuadruplosMan
 from lexer import tokens
 import sys
 
 semantica = analizadorsemantico()
+cuadru = CuadruplosMan()
+
 
 def p_program(p):
     '''program : PROGRAM ID SEMI vars_decls func_decls MAIN body END'''
@@ -81,7 +84,9 @@ def p_statement(p):
 # se encuentra como <ASSING>
 def p_assignment(p):
     '''assignment : ID EQ expression SEMI'''
-    var_type = semantica.obtener_tipo_variable(p[1])
+    var = p[1]
+    var_type = semantica.obtener_tipo_variable(var)
+
     if isinstance(p[3], tuple):
         if p[3][0] == 'CONST':
             expr_type = p[3][2][1]
@@ -94,26 +99,119 @@ def p_assignment(p):
     else:
         expr_type = p[3]
 
-    resultado = semantica.checar_operador(var_type, '=', expr_type)
-    p[0] = ('ASSIGN', p[1], p[3])
+    semantica.checar_operador(var_type, '=', expr_type)
+
+    valor = cuadru.operandos.pop()
+    cuadru.tipos.pop()
+
+    cuadru.operandos.append(valor)
+    cuadru.tipos.append(expr_type)
+
+    cuadru.operandos.append(var)
+    cuadru.tipos.append(var_type)
+
+    cuadru.asigna()
+
+    p[0] = ('ASSIGN', var, p[3])
 
 
 # ------------------------------------------------------------------------------
 # se encuentra como el <condition>
 def p_condition(p):
     '''condition : IF LPAREN expression RPAREN body else_part SEMI'''
-    p[0] = ('IF', p[3], p[5], p[6])
+    exp = p[3]
+    print("DEBUG condition - Tipos:", cuadru.tipos)
+    print("DEBUG condition - Operandos:", cuadru.operandos)
+
+    if not cuadru.tipos or not cuadru.operandos:
+        raise Exception("Error: pila vacía al evaluar la condición IF")
+
+    tipo = cuadru.tipos.pop()
+    resultado = cuadru.operandos.pop()
+    print("Condition type", tipo)
+    if tipo != 'bool':
+        raise Exception("Condición no booleana en IF")
+
+    # Cuádruplo GOTOF con salto pendiente
+    false_jump_index = len(cuadru.cuadruplos)
+    cuadru.cuadruplos.append(('GOTOF', resultado, None, None))
+    cuadru.saltos.append(false_jump_index)
+
+    # cuerpo del IF
+    p[5]  # body
+
+    if p[6]:  # hay else
+        goto_end_index = len(cuadru.cuadruplos)
+        cuadru.cuadruplos.append(('GOTO', None, None, None))
+
+        end_if_index = len(cuadru.cuadruplos)
+        gotof_index = cuadru.saltos.pop()
+        cuadru.cuadruplos[gotof_index] = ('GOTOF', resultado, None, end_if_index)
+
+        cuadru.cuadruplos[goto_end_index] = ('GOTO', None, None, len(cuadru.cuadruplos))
+    else:
+        end_if_index = len(cuadru.cuadruplos)
+        gotof_index = cuadru.saltos.pop()
+        cuadru.cuadruplos[gotof_index] = ('GOTOF', resultado, None, end_if_index)
+
+    p[0] = ('IF', exp, p[5], p[6])
+
 
 def p_else_part(p):
     '''else_part : ELSE body
                  | empty'''
-    p[0] = p[2] if len(p) > 1 else None
+    if len(p) > 1:
+        p[0] = p[2]
+    else:
+        p[0] = None
 
+    # if len(p) > 1:
+    #     goto_end = len(cuadru.cuadruplos)
+    #     cuadru.cuadruplos.append(('GOTO', None, None, None))
+    #
+    #     end_if = len(cuadru.cuadruplos)
+    #     gotof_index = cuadru.saltos.pop()
+    #     cuadru.cuadruplos[gotof_index] = ('GOTOF', cuadru.operandos[-1], None, end_if)
+    #
+    #     cuadru.saltos.append(goto_end)
+    #     p[0] = p[2]
+    # else:
+    #     p[0] = None
 # ------------------------------------------------------------------------------
 # declarado como <cycle>
 def p_loop(p):
     '''loop : WHILE LPAREN expression RPAREN DO body SEMI'''
+    # p[0] = ('WHILE', p[3], p[6])
+
+    loop_start = len(cuadru.cuadruplos)
+
+    if not cuadru.tipos or not cuadru.operandos:
+        raise Exception("Error: pila vacía al evaluar la condición WHILE")
+
+    tipo = cuadru.tipos.pop()
+    resultado = cuadru.operandos.pop()
+
+    if tipo != 'bool':
+        raise Exception("Condición no booleana en WHILE")
+
+    # Salto falso si la condición es falsa
+    false_jump_index = len(cuadru.cuadruplos)
+    cuadru.cuadruplos.append(('GOTOF', resultado, None, None))
+    cuadru.saltos.append(false_jump_index)
+
+    # Ejecutar body del ciclo
+    p[6]
+
+    # GOTO al inicio del ciclo
+    cuadru.cuadruplos.append(('GOTO', None, None, loop_start))
+
+    # Fin del ciclo (actualizar GOTOF pendiente)
+    end_loop = len(cuadru.cuadruplos)
+    gotof_index = cuadru.saltos.pop()
+    cuadru.cuadruplos[gotof_index] = ('GOTOF', resultado, None, end_loop)
+
     p[0] = ('WHILE', p[3], p[6])
+
 
 # ------------------------------------------------------------------------------
 # Declarada en el documento como <fcall>
@@ -144,7 +242,16 @@ def p_expression_list(p):
 # Es el <print>
 def p_print_stmt(p):
     '''print_stmt : PRINT LPAREN print_args RPAREN SEMI'''
+    # p[0] = ('PRINT', p[3])
+    if p[3]:
+        for val in p[3]:
+            if isinstance(val, tuple) and val[0] != 'CONST':
+                # Es expresión numérica, sacar operandos
+                if cuadru.operandos:
+                    cuadru.operandos.pop()
+                    cuadru.tipos.pop()
     p[0] = ('PRINT', p[3])
+
 
 def p_print_args(p):
     '''print_args : print_list
@@ -202,12 +309,40 @@ def p_type(p):
 def p_expression(p):
     '''expression : simple_expression
                   | simple_expression relop simple_expression'''
+    # if len(p) == 2:
+    #     p[0] = p[1]
+    # else:
+    #     p[0] = ('RELOP', p[2], p[1], p[3])
     if len(p) == 2:
         p[0] = p[1]
     else:
-        semantica.pila_operadores.append(p[2])
-        semantica.generar_cuadruplo()
-        p[0] = ('RELOP', p[2], p[1], p[3])
+        left = p[1]
+        right = p[3]
+        op = p[2]
+
+        left_val = left[1] if isinstance(left, tuple) else left
+        right_val = right[1] if isinstance(right, tuple) else right
+
+        left_type = left[2][1] if isinstance(left, tuple) and left[2][0] == 'TYPE' else None
+        right_type = right[2][1] if isinstance(right, tuple) and right[2][0] == 'TYPE' else None
+
+        result_type = semantica.checar_operador(left_type, op, right_type)
+
+        cuadru.operandos.pop()
+        cuadru.operandos.pop()
+        cuadru.tipos.pop()
+        cuadru.tipos.pop()
+
+        temp = cuadru.nuevo_temp()
+        cuadru.cuadruplos.append((op, left_val, right_val, temp))
+
+        cuadru.operandos.append(temp)
+        cuadru.tipos.append(result_type)
+
+        p[0] = ('RELOP', op, left, right, ('TYPE', result_type))
+
+        print("AFTER expression - Tipos:", cuadru.tipos)
+        print("AFTER expression - Operandos:", cuadru.operandos)
 
 
 # Definido en el documento con <EXP>
@@ -215,51 +350,60 @@ def p_simple_expression(p):
     '''simple_expression : term
                          | term PLUS simple_expression
                          | term MINUS simple_expression'''
+    #
     if len(p) == 2:
         p[0] = p[1]
     else:
         op = p[2]
+        left = p[1]
+        right = p[3]
+        left_val = left[1] if isinstance(left, tuple) else left
+        right_val = right[1] if isinstance(right, tuple) else right
+        left_type = left[2][1] if isinstance(left, tuple) and left[2][0] == 'TYPE' else None
+        right_type = right[2][1] if isinstance(right, tuple) and right[2][0] == 'TYPE' else None
 
-        if isinstance(p[1], tuple):
-            if p[1][0] == 'ID':
-                left_type = p[1][2][1]
-            elif p[1][0] == 'CONST':
-                left_type = p[1][2][1]
-            elif isinstance(p[1][-1], tuple) and p[1][-1][0] == 'TYPE':
-                left_type = p[1][-1][1]
-            else:
-                raise Exception(f"No se pudo extraer tipo izquierdo: {p[1]}")
-        else:
-            left_type = p[1]
+        result_type = semantica.checar_operador(left_type, op, right_type)
+        cuadru.operandos.pop()
+        cuadru.operandos.pop()
+        cuadru.tipos.pop()
+        cuadru.tipos.pop()
+        temp = cuadru.nuevo_temp()
+        cuadru.cuadruplos.append((op, left_val, right_val, temp))
+        cuadru.operandos.append(temp)
+        cuadru.tipos.append(result_type)
 
-        if isinstance(p[3], tuple):
-            if p[3][0] == 'ID':
-                right_type = p[3][2][1]
-            elif p[3][0] == 'CONST':
-                right_type = p[3][2][1]
-            elif isinstance(p[3][-1], tuple) and p[3][-1][0] == 'TYPE':
-                right_type = p[3][-1][1]
-            else:
-                raise Exception(f"No se pudo extraer tipo derecho: {p[3]}")
-        else:
-            right_type = p[3]
+        p[0] = ('SUMIN', op, left, right, ('TYPE', result_type))
 
-        resultado = semantica.checar_operador(left_type, op, right_type)
-
-        p[0] = ('SUMIN', op, p[1], p[3], ('TYPE', resultado))
 
 # -------------------------------------------------------------------------------
 # definida como <termino>
 def p_term(p):
     '''term : factor
             | factor mulop term'''
+    # if len(p) == 2:
+    #     p[0] = p[1]
+    # else:
+    #     p[0] = ('MULOP', p[2], p[1], p[3])
     if len(p) == 2:
         p[0] = p[1]
     else:
-        semantica.pila_operadores.append(p[2])
-        semantica.generar_cuadruplo()
-        p[0] = ('MULOP', p[2], p[1], p[3])
-
+        op = p[2]
+        left = p[1]
+        right = p[3]
+        left_val = left[1] if isinstance(left, tuple) else left
+        right_val = right[1] if isinstance(right, tuple) else right
+        left_type = left[2][1] if isinstance(left, tuple) and left[2][0] == 'TYPE' else None
+        right_type = right[2][1] if isinstance(right, tuple) and right[2][0] == 'TYPE' else None
+        result_type = semantica.checar_operador(left_type, op, right_type)
+        cuadru.operandos.pop()
+        cuadru.operandos.pop()
+        cuadru.tipos.pop()
+        cuadru.tipos.pop()
+        temp = cuadru.nuevo_temp()
+        cuadru.cuadruplos.append((op, left_val, right_val, temp))
+        cuadru.operandos.append(temp)
+        cuadru.tipos.append(result_type)
+        p[0] = ('MULOP', op, left, right, ('TYPE', result_type))
 # -------------------------------------------------------------------------------
 # definido como <factor>
 def p_factor(p):
@@ -286,6 +430,8 @@ def p_faciden(p):
                 | cte'''
     if isinstance(p[1], str):
         tipo = semantica.obtener_tipo_variable(p[1])
+        cuadru.operandos.append(p[1])
+        cuadru.tipos.append(tipo)
         p[0] = ('ID', p[1], ('TYPE', tipo))
     else:
         p[0] = p[1]
@@ -296,7 +442,12 @@ def p_faciden(p):
 def p_cte(p):
     '''cte : CTE_INT
            | CTE_FLOAT'''
-    p[0] = ('CONST', p[1], ('TYPE', 'int' if isinstance(p[1], int) else 'float'))
+    # p[0] = ('CONST', p[1], ('TYPE', 'int' if isinstance(p[1], int) else 'float'))
+    tipo = 'int' if isinstance(p[1], int) else 'float'
+    cuadru.operandos.append(p[1])
+    cuadru.tipos.append(tipo)
+    p[0] = ('CONST', p[1], ('TYPE', tipo))
+
 
 def p_relop(p):
     '''relop : LT
@@ -322,53 +473,5 @@ def p_error(p):
     else:
         print("Syntax error at EOF")
     sys.exit(1)
-# /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\//\/\
-# cuadruplos
 
-def p_expresion_binaria(p):
-    '''expresion : expresion PLUS termino
-                 | expresion MINUS termino'''
-    p[0] = None
-    semantica.pila_operadores.append(p[2])
-    semantica.generar_cuadruplo()
-
-def p_termino_binario(p):
-    '''termino : termino MULT factor
-               | termino DIV factor'''
-    p[0] = None
-    semantica.pila_operadores.append(p[2])
-    semantica.generar_cuadruplo()
-
-def p_factor_num(p):
-    'factor : NUMBER'
-    semantica.pila_operandos.append(p[1])
-    semantica.pila_tipos.append('int')
-    p[0] = p[1]
-
-def p_factor_id(p):
-    'factor : ID'
-    tipo = semantica.obtener_tipo_variable(p[1])
-    if isinstance(tipo, Exception):
-        raise tipo
-    semantica.pila_operandos.append(p[1])
-    semantica.pila_tipos.append(tipo)
-    p[0] = p[1]
-
-def p_asignacion(p):
-    'asignacion : ID EQ expresion'
-    tipo_id = semantica.obtener_tipo_variable(p[1])
-    tipo_exp = semantica.pila_tipos.pop()
-    resultado = semantica.pila_operandos.pop()
-
-    if tipo_id != tipo_exp:
-        raise Exception(f"Error de tipo en asignación: {tipo_id} = {tipo_exp}")
-
-    semantica.cuadruplos.append(('=', resultado, None, p[1]))
-
-
-for i, cuad in enumerate(semantica.cuadruplos):
-    print(f"{i}: {cuad}")
 parser = yacc.yacc()
-
-
-
