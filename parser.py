@@ -15,22 +15,27 @@ def p_program(p):
 
 def p_func_decls(p):
     '''func_decls : func_decl func_decls
+                  | func_decl
                   | empty'''
     if len(p) == 3:
         p[0] = [p[1]] + (p[2] if p[2] else [])
+    elif len(p) == 2 and p[1]:
+        p[0] = [p[1]]
     else:
         p[0] = []
+
 
 # ------------------------------------------------------------------------------
 # Esta escrita como <func>
 def p_func_decl(p):
     '''func_decl : VOID ID LPAREN params RPAREN LCO local_vars body RCO SEMI'''
     func_name = p[2]
-
-
     params = p[4] or []
-    semantica.enter_scope(func_name)
+
+    print("PARAMETROS:", params)
     semantica.declarar_fucion(func_name, 'void', [(name, typ) for _, name, typ in params])
+    semantica.enter_scope(func_name)
+    print(f"DECLARANDO FUNCION: {func_name}")
 
     local_decls = p[6] if p[6] else []
     for decl in local_decls:
@@ -41,8 +46,10 @@ def p_func_decl(p):
                 semantica.declarar_variable(var_id, tipo)
 
     semantica.entorno_salida()
-    print("PARSING FUNC OK:", func_name)
+    print(f"FUNC {func_name} declaró: {semantica.directorio_Funk[func_name]['vars']}")
+
     p[0] = ('FUNC_DECL', func_name, params, local_decls, p[7])
+
 
 
 def p_params(p):
@@ -89,8 +96,7 @@ def p_statement(p):
 def p_assignment(p):
     '''assignment : ID EQ expression SEMI'''
     var = p[1]
-    var_type = semantica.obtener_tipo_variable(var)
-
+    var_type, var_addr = semantica.obtener_tipo_variable(var)
     if isinstance(p[3], tuple):
         if p[3][0] == 'CONST':
             expr_type = p[3][2][1]
@@ -102,21 +108,15 @@ def p_assignment(p):
             raise Exception(f"No se pudo extraer tipo de la expresión: {p[3]}")
     else:
         expr_type = p[3]
-
     semantica.checar_operador(var_type, '=', expr_type)
-
-    valor = cuadru.operandos.pop()
+    valor_addr = cuadru.operandos.pop()
     cuadru.tipos.pop()
-
-    cuadru.operandos.append(valor)
+    cuadru.operandos.append(valor_addr)
     cuadru.tipos.append(expr_type)
-
-    cuadru.operandos.append(var)
+    cuadru.operandos.append(var_addr)
     cuadru.tipos.append(var_type)
-
     cuadru.asigna()
-
-    p[0] = ('ASSIGN', var, p[3])
+    p[0] = ('ASSIGN', var_addr, p[3])
 
 
 # ------------------------------------------------------------------------------
@@ -246,10 +246,13 @@ def p_print_stmt(p):
     if p[3]:
         for val in p[3]:
             if isinstance(val, tuple) and val[0] != 'CONST':
-                # Es expresión numérica, sacar operandos
                 if cuadru.operandos:
-                    cuadru.operandos.pop()
+                    addr = cuadru.operandos.pop()
                     cuadru.tipos.pop()
+                    cuadru.cuadruplos.append(('PRINT', addr, None, None))
+            elif isinstance(val, tuple) and val[0] == 'CONST':
+                addr = val[1]
+                cuadru.cuadruplos.append(('PRINT', addr, None, None))
     p[0] = ('PRINT', p[3])
 
 
@@ -337,7 +340,7 @@ def p_expression(p):
         cuadru.tipos.pop()
         cuadru.tipos.pop()
 
-        temp = cuadru.nuevo_temp()
+        temp = cuadru.nuevo_temp(result_type)
         cuadru.cuadruplos.append((op, left_val, right_val, temp))
 
         cuadru.operandos.append(temp)
@@ -371,7 +374,7 @@ def p_simple_expression(p):
         cuadru.operandos.pop()
         cuadru.tipos.pop()
         cuadru.tipos.pop()
-        temp = cuadru.nuevo_temp()
+        temp = cuadru.nuevo_temp(result_type)
         cuadru.cuadruplos.append((op, left_val, right_val, temp))
         cuadru.operandos.append(temp)
         cuadru.tipos.append(result_type)
@@ -403,7 +406,7 @@ def p_term(p):
         cuadru.operandos.pop()
         cuadru.tipos.pop()
         cuadru.tipos.pop()
-        temp = cuadru.nuevo_temp()
+        temp = cuadru.nuevo_temp(result_type)
         cuadru.cuadruplos.append((op, left_val, right_val, temp))
         cuadru.operandos.append(temp)
         cuadru.tipos.append(result_type)
@@ -433,10 +436,10 @@ def p_faciden(p):
     ''' faciden : ID
                 | cte'''
     if isinstance(p[1], str):
-        tipo = semantica.obtener_tipo_variable(p[1])
-        cuadru.operandos.append(p[1])
+        tipo, addr = semantica.obtener_tipo_variable(p[1])
+        cuadru.operandos.append(addr)
         cuadru.tipos.append(tipo)
-        p[0] = ('ID', p[1], ('TYPE', tipo))
+        p[0] = ('ID', addr, ('TYPE', tipo))
     else:
         p[0] = p[1]
 
@@ -448,7 +451,8 @@ def p_cte(p):
            | CTE_FLOAT'''
     # p[0] = ('CONST', p[1], ('TYPE', 'int' if isinstance(p[1], int) else 'float'))
     tipo = 'int' if isinstance(p[1], int) else 'float'
-    cuadru.operandos.append(p[1])
+    addr = semantica.memoria.get_constant_address(p[1], tipo)
+    cuadru.operandos.append(addr)
     cuadru.tipos.append(tipo)
     p[0] = ('CONST', p[1], ('TYPE', tipo))
 

@@ -1,3 +1,4 @@
+from memoria import Mmemoria
 
 class analizadorsemantico:
     def __init__(self):
@@ -12,7 +13,7 @@ class analizadorsemantico:
         }
         self.entorno_actual = 'global'
         self.cubito_semantico = self.build_cubito_semantico()
-
+        self.memoria = Mmemoria()
 
     def build_cubito_semantico(self):
         return {
@@ -72,30 +73,40 @@ class analizadorsemantico:
                 ('float', 'int'):'bool',
             }
         }
-    def enter_scope(self,nombre_func):
+
+    def enter_scope(self, nombre_func):
         self.entorno_actual = nombre_func
-        if nombre_func in self.directorio_Funk:
+        if nombre_func not in self.directorio_Funk:
             self.directorio_Funk[nombre_func] = {
-                'vars':{},
-                'type':'void',
-                'params':[]
+                'vars': {},
+                'type': 'void',
+                'params': []
             }
+
+
     def entorno_salida(self):
         self.entorno_actual = 'global'
 
     def declarar_variable(self,nombre_var, tipo_var):
         entorno_de_variable = self.directorio_Funk[self.entorno_actual]['vars']
+
         if nombre_var in entorno_de_variable:
             raise Exception(f"{nombre_var} ya existe")
-        entorno_de_variable[nombre_var] = tipo_var
 
-    def obtener_tipo_variable(self,nombre_var):
-        if nombre_var in self.directorio_Funk[self.entorno_actual]['vars']:
-            return self.directorio_Funk[self.entorno_actual]['vars'][nombre_var]
-        elif nombre_var in self.directorio_Funk['global']['vars']:
-            return self.directorio_Funk['global']['vars'][nombre_var]
-        else:
-            return Exception(f"{nombre_var} no esta declarada")
+        addr = self.memoria.get_address(
+            'global' if self.entorno_actual == 'global' else 'local',
+            nombre_var,
+            tipo_var
+        )
+
+        entorno_de_variable[nombre_var] = {'type': tipo_var, 'addr': addr}
+
+    def obtener_tipo_variable(self, nombre_var):
+        for scope in [self.entorno_actual, 'global']:
+            if nombre_var in self.directorio_Funk[scope]['vars']:
+                var_info = self.directorio_Funk[scope]['vars'][nombre_var]
+                return var_info['type'], var_info['addr']
+        raise Exception(f"{nombre_var} no está declarada")
 
     def checar_operador(self, iz_type, operador, de_type):
         result = self.cubito_semantico.get(operador, {}).get((iz_type, de_type))
@@ -107,10 +118,18 @@ class analizadorsemantico:
         if func_name in self.directorio_Funk:
             raise Exception(f"{func_name} ya existe")
         self.directorio_Funk[func_name] = {
-            'vars':{},
-            'type':type_return,
-            'params':parametros
+            'vars': {},
+            'type': type_return,
+            'params': parametros
         }
+
+        for param_name, param_type in parametros:
+            addr = self.memoria.get_address('local', param_name, param_type)
+            self.directorio_Funk[func_name]['vars'][param_name] = {
+                'type': param_type,
+                'addr': addr
+            }
+        print(f"Registrado param: {param_name} tipo {param_type} addr {addr}")
 
     def validar_fun_call(self, nombre_func, argumentos_type):
         if nombre_func not in self.directorio_Funk:

@@ -22,7 +22,8 @@ tokens = [
     'CTE_INT', 'CTE_FLOAT', 'CTE_STRING',
     'PLUS', 'MINUS', 'MULT', 'DIV',
     'LT', 'GT', 'EQ', 'NEQ',
-    'LPAREN', 'RPAREN', 'SEMI', 'COLON', 'LBRACE', 'RBRACE', 'COMMA', 'LCO', 'RCO'
+    'LPAREN', 'RPAREN', 'SEMI', 'COLON', 'LBRACE', 'RBRACE', 'COMMA', 'LCO', 'RCO',
+    # 'IGUA'
 ] + list(reserved.values())
 
 # Expresiones regulares para tokens simples
@@ -43,6 +44,7 @@ t_RBRACE = r'\}'
 t_COMMA = r','
 t_LCO = r'\['
 t_RCO = r'\]'
+# t_IGUA = r'=='
 
 # Ignorar espacios y tabs
 t_ignore = ' \t'

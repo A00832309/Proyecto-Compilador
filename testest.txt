@@ -1,0 +1,93 @@
+--- TESTCASE ---
+program Fugonachi;
+    vars n : int;
+
+    void generarFugonachi(n: int)
+    [
+        vars a, b, temp : int;
+        {
+            a = 0;
+            b = 1;
+            print(a);
+            if (n > 1) {
+                print(b);
+                n = n - 2;
+                while (n > 0) do {
+                    temp = a + b;
+                    print(temp);
+                    a = b;
+                    b = temp;
+                    n = n - 1;
+                };
+            };
+        }
+    ];
+
+    main {
+        n = 7;
+        generarFugonachi(n);
+    }
+    end
+--- TESTCASE ---
+program LoopTest;
+    vars x : int;
+    main {
+        x = 0;
+        while (x > 10) do {
+            print(x);
+            x = x + 1;
+        };
+    }
+    end
+
+
+--- TESTCASE ---
+program PruebaFinal;
+vars x, y : int;
+
+void comparar(val: int) [
+    vars resultado : int;
+    {
+        resultado = val + 2;
+        if (resultado > 5) {
+            print("Mayor que 5");
+        } else {
+            print("Menor o igual que 5");
+        };
+    }
+];
+
+main {
+    x = 3;
+    y = 0;
+
+    while (x < 6) do {
+        y = y + 1;
+        comparar(x);
+        x = x + 1;
+    };
+    print(y);
+}
+end
+
+
+
+--- TESTCASE ---
+program MyProgram;
+    vars x, y : int;
+    vars a :int;
+    void foo(a: int) [
+        {
+            a = 1;
+            print("Dentro de foo");
+        }
+    ];
+    main {
+        x = 3;
+        if (x < 5) {
+            print(x);
+        } else {
+            print("Mayor o igual");
+        };
+    }
+    end
